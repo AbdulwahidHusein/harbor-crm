@@ -7,13 +7,10 @@ export const taskSchema = z.object({
   content: z.string(),
   taskStatus: z.string(),
   dueDateAt: z.date(),
+  priority: z.string(),
   assigned_user: z.object({
     name: z.string(),
   }),
-  /*   title: z.string(),
-  status: z.string(),
-  label: z.string(),
-  priority: z.string(), */
 });
 
 export type Task = z.infer<typeof taskSchema>;
