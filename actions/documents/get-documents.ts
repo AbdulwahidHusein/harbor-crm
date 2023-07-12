@@ -14,6 +14,9 @@ export const getDocuments = async () => {
         },
       },
     },
+    orderBy: {
+      date_created: "desc",
+    },
   });
   return data;
 };
