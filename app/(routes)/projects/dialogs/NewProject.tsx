@@ -153,7 +153,7 @@ const NewProjectDialog = (props: Props) => {
                     name="visibility"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Assigned to</FormLabel>
+                        <FormLabel>Project visibility</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
