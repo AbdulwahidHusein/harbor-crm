@@ -8,13 +8,20 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Cross1Icon } from "@radix-ui/react-icons";
 
 type Props = {
-  label: string;
+  label?: string;
   title: string;
   description: string;
+  trigger?: boolean;
   children: ReactNode;
 };
 
-const RightViewModal = ({ label, title, description, children }: Props) => {
+const RightViewModal = ({
+  label,
+  title,
+  description,
+  children,
+  trigger,
+}: Props) => {
   const [open, setOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -28,10 +35,11 @@ const RightViewModal = ({ label, title, description, children }: Props) => {
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger asChild>
-        <Button>{label}</Button>
-      </Dialog.Trigger>
-
+      {trigger ? (
+        <Dialog.Trigger asChild>
+          <Button>{label}</Button>
+        </Dialog.Trigger>
+      ) : null}
       <Dialog.Portal className="">
         <Dialog.Overlay className="data-[state=open]:animate-[dialog-overlay-show_1000ms] data-[state=closed]:animate-[dialog-overlay-hide_1000ms] fixed inset-0 bg-black/50" />
         <Dialog.Content
