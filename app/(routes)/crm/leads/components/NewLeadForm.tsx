@@ -40,21 +40,9 @@ import { Calendar } from "@/components/ui/calendar";
 //TODO: fix all the types
 type NewTaskFormProps = {
   users: any[];
-  accounts: any[];
-  contacts: any[];
-  salesType: any[];
-  saleStages: any[];
-  campaigns: any[];
 };
 
-export function NewLeadForm({
-  users,
-  accounts,
-  contacts,
-  salesType,
-  saleStages,
-  campaigns,
-}: NewTaskFormProps) {
+export function NewLeadForm({ users }: NewTaskFormProps) {
   const router = useRouter();
   const { toast } = useToast();
 
