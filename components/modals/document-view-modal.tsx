@@ -29,8 +29,6 @@ const DocumentViewModal = ({
     return null;
   }
 
-  const docs = [{ uri: document.document_file_url, fileType: "docx" }];
-
   if (document.document_file_mimeType !== "application/pdf") {
     return (
       <ModalDocumentView isOpen={isOpen} onClose={onClose}>
