@@ -16,6 +16,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
 import {} from "../data/data";
@@ -119,8 +120,8 @@ export function DataTableRowActions<TData>({
       />
 
       <RightViewModalNoTrigger
-        title={"Update Account" + " - " + invoice?.id}
-        description="Update account details"
+        title={"Update Invoice" + " - " + invoice?.id}
+        description="Update invoice metadata with Rossum cockpit"
         open={openRossumView}
         setOpen={setOpenRossumView}
       >
@@ -142,7 +143,8 @@ export function DataTableRowActions<TData>({
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />
-          <span className="underline px-1">Rossum</span>
+          <DropdownMenuLabel>Rossum</DropdownMenuLabel>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setOpenRossumView(true)}>
             Edit metadata with Rossum cockpit
           </DropdownMenuItem>
