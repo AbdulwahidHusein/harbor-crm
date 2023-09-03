@@ -42,7 +42,7 @@ export function DataTableRowActionsTasks<TData>({
   const router = useRouter();
   const params = useParams();
 
-  console.log(params, "params");
+  //console.log(params, "params");
 
   const { toast } = useToast();
 
