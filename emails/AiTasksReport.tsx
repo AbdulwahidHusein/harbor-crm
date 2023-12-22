@@ -31,7 +31,7 @@ export const AiTasksReportEmail = ({
   avatar,
   data,
 }: VercelInviteUserEmailProps) => {
-  const previewText = `Password reset from ${process.env.NEXT_PUBLIC_APP_NAME}`;
+  const previewText = `AI Report from:  ${process.env.NEXT_PUBLIC_APP_NAME}`;
 
   return (
     <Html>
