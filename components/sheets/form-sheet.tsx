@@ -11,23 +11,30 @@ import {
 import { Button } from "../ui/button";
 
 type RightSheetProps = {
+  open?: boolean;
+  setOpen?: (open: boolean) => void;
   position?: "left" | "right" | "top" | "bottom";
-  trigger: string;
+  trigger?: string;
   title: string;
   description: string;
   children: React.ReactNode;
+  onClose: React.RefObject<HTMLButtonElement> | null;
 };
 
 const FormSheet = ({
+  open,
+  setOpen,
   position,
   trigger,
   title,
   description,
   children,
+  onClose,
 }: RightSheetProps) => {
+  console.log(open, "open");
   return (
     <Sheet>
-      <SheetTrigger asChild>
+      <SheetTrigger asChild ref={onClose}>
         <Button className="mb-5">{trigger}</Button>
       </SheetTrigger>
       <SheetContent side={position || "right"}>
