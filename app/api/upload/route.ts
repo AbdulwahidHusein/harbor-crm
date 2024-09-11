@@ -23,10 +23,10 @@ export async function POST(request: NextRequest) {
     console.log("Error - no file found");
     return NextResponse.json({ success: false });
   }
-
+  console.log("FIle from UPLOAD API:", file);
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
-  //console.log(buffer, "buffer");
+  console.log("Buffer:", buffer);
 
   //Rossum integration
   const rossumURL = process.env.ROSSUM_API_URL;
@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
 
   const form = new FormData();
   form.append("content", buffer, file.name);
+
+  console.log("FORM DATA:", form);
 
   const uploadInvoiceToRossum = await axios.post(queueUploadUrl, form, {
     headers: {
