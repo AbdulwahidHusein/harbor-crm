@@ -69,8 +69,11 @@ export const auth = betterAuth({
 
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_ID!,
-      clientSecret: process.env.GOOGLE_SECRET!,
+      // Bracket access stays live at request time. A direct process.env.GOOGLE_ID
+      // is frozen when Next builds, which made Google sign-in 500 when the
+      // value was not present for that build.
+      clientId: process.env["GOOGLE_ID"]!,
+      clientSecret: process.env["GOOGLE_SECRET"]!,
     },
   },
 
