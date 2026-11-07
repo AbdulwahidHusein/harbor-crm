@@ -12,8 +12,20 @@ const isDemo = process.env.NEXT_PUBLIC_APP_URL === "https://demo.nextcrm.io";
 export const auth = betterAuth({
   database: prismaAdapter(prismadb, { provider: "postgresql" }),
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL,
+  // The public host is the custom domain, a Vercel preview, or localhost.
+  // A baked-in BETTER_AUTH_URL rejects the others with "Invalid origin".
+  baseURL: {
+    allowedHosts: [
+      "harbor-crm.abdulwahidhussen.com",
+      "localhost:3000",
+      "127.0.0.1:3000",
+      "*.vercel.app",
+    ],
+    fallback: process.env.BETTER_AUTH_URL || "https://harbor-crm.abdulwahidhussen.com",
+    protocol: "auto",
+  },
   advanced: {
+    trustedProxyHeaders: true,
     database: {
       generateId: "uuid",
     },

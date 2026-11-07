@@ -38,10 +38,16 @@ const ORIGIN_CHECK_EXEMPT = [
 function isCrossOriginWrite(req: NextRequest, path: string, hasSessionCookie: boolean) {
   if (!hasSessionCookie || ["GET", "HEAD", "OPTIONS"].includes(req.method)) return false;
   if (path.includes("/webhooks/") || ORIGIN_CHECK_EXEMPT.some((p) => path.startsWith(p))) return false;
-  const appOrigin = process.env.BETTER_AUTH_URL
-    ? new URL(process.env.BETTER_AUTH_URL).origin
-    : req.nextUrl.origin;
-  return req.headers.get("origin") !== appOrigin;
+  const allowed = new Set<string>([req.nextUrl.origin]);
+  if (process.env.BETTER_AUTH_URL) {
+    try {
+      allowed.add(new URL(process.env.BETTER_AUTH_URL).origin);
+    } catch {
+      // Ignore a malformed configured origin and keep the request host.
+    }
+  }
+  const origin = req.headers.get("origin");
+  return !origin || !allowed.has(origin);
 }
 
 export async function proxy(req: NextRequest) {
