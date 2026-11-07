@@ -1,520 +1,102 @@
-<a href="https://nextcrm.app/">
-  <h1 align="center">NextCRM</h1>
-</a>
+# Harbor CRM
 
-<p align="center">
-<img alt="OG" src="public/images/opengraph-image.png" />
-</p>
+Harbor is a CRM for companies, contacts, leads, deals, projects, invoices, documents, and email. It reads the record behind each relationship and keeps sales, delivery, and billing in one place.
 
-<p align="center">
-NextCRM is an open-source CRM built with Next.js 16, React 19, TypeScript, PostgreSQL (Prisma 7), and shadcn/ui. Features CRM, project management, invoicing, document storage, email client, AI-powered features, vector search, and MCP server for AI agent access.
-</p>
+## Product
 
-<p align="center">
-<a href="https://twitter.com/nextcrmapp">
-<img alt="X (formerly Twitter) URL" src="https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fnextcrmapp">
-</a>
-  <a href="https://github.com/pdovhomilja/nextcrm-app/blob/main/LICENSE">
-    <img alt="GitHub License" src="https://img.shields.io/github/license/pdovhomilja/nextcrm-app">
-  </a>
-</p>
+- **Sales** — companies, contacts, leads, opportunities, contracts, products, price lists, and orders
+- **Activities** — notes, calls, emails, meetings, and tasks linked to any record
+- **Audit history** — field-level change trail, soft delete, and an admin audit log
+- **Invoices** — line items, tax, multiple currencies, series, payments, PDF, and email delivery
+- **Documents** — file storage on S3-compatible storage
+- **Search** — keyword search plus semantic similarity across CRM records
+- **Intelligence** — briefings and enrichment from your own records, with confirmation before anything is written
+- **Email** — IMAP/SMTP mailbox plus login codes and invoice mail
+- **Agent access** — MCP server so an AI client can read and write CRM data with a bearer token
 
-<p align="center">
-   <a href="#online-demo"><strong>Introduction</strong></a> ·
-   <a href="#whats-new"><strong>What's New</strong></a> ·
-   <a href="#tech-stack--features"><strong>Tech Stack + Features</strong></a> ·
-   <a href="#roadmap"><strong>Roadmap</strong></a> ·
-   <a href="#installation"><strong>Installation</strong></a> ·
-   <a href="#repo-activity"><strong>Repo activity</strong></a> ·
-   <a href="#license"><strong>License</strong></a> ·
-   <a href="https://discord.gg/Dd4Aj6S4Dz"><strong>Discord</strong></a>
-</p>
-<br/>
+Languages: English, Czech, German, and Ukrainian.
 
-## Online Demo
+## Stack
 
-You can try it here [demo.nextcrm.io](https://demo.nextcrm.io), login via Google account or create new user and password.
+- Next.js 16, React 19, TypeScript, Tailwind CSS, shadcn/ui
+- PostgreSQL 17 with pgvector, Prisma 7
+- Better Auth (email code and optional Google sign-in)
+- MinIO or any S3-compatible store for files
+- Inngest for background jobs
+- Optional OpenAI, Anthropic, Firecrawl, and E2B for intelligence features
 
----
+## Run with Docker
 
-## What's New
-
-### 🧾 Invoices Module — Full Invoicing Workflow *(NEW)*
-
-Complete invoicing system built into NextCRM — create, issue, pay, duplicate, and cancel invoices with multi-currency support, tax rates, and PDF generation.
-
-- **Invoice types** — Invoice, Credit Note, Proforma, and Receipt
-- **Line items** — per-line quantity, unit price, discount %, and tax rate with automatic totals calculation
-- **Tax engine** — configurable tax rates (VAT, GST, etc.) with per-line tax breakdown and VAT summary buckets
-- **Invoice series** — auto-numbered sequences with configurable prefix/suffix (e.g. `INV-2026-0001`)
-- **Multi-currency** — admin-managed currency list with locale-aware formatting via `next-intl`
-- **Status lifecycle** — `DRAFT → ISSUED → PAID / PARTIALLY_PAID / CANCELLED` with permission guards (only drafts are editable)
-- **Payments** — record partial/full payments, auto-computed balance due, payment history on detail page
-- **Duplicate & cancel** — one-click invoice duplication; cancellation with audit trail
-- **Email delivery** — send invoices to account email via Resend with React Email template
-- **PDF export** — server-side PDF generation at `/api/invoices/[id]/pdf`
-- **Activity log** — every status change and edit is recorded with actor and timestamp
-- **Admin settings** — manage tax rates, invoice series, currencies, and default settings from `/admin/invoices`
-- **i18n** — full English and Czech translations
-- **Server actions** — create/update operations use Next.js server actions with Zod validation (no API route middleman)
-
----
-
-### 📋 CRM Activities — Full Activity Tracking *(NEW)*
-
-All 5 CRM entity detail pages (Accounts, Contacts, Leads, Opportunities, Contracts) now have an **Activities** tab with a live paginated feed of interactions:
-
-- **Activity types** — Notes, Calls, Emails, Meetings, Tasks
-- **Create / edit / delete** — inline Sheet form on every CRM entity detail page
-- **Paginated feed** — compound cursor pagination with `createdAt + id` for stable ordering
-- **Linked records** — activities attach to multiple entities via `crm_ActivityLinks` (e.g. a call can reference both a Contact and an Opportunity)
-- **Real-time revalidation** — server actions revalidate the correct path after every mutation
-
----
-
-### 🕵️ Audit Log & History — Full Change Trail *(NEW)*
-
-Every CRM entity (Accounts, Contacts, Leads, Opportunities, Contracts) now tracks its full change history:
-
-- **History tab** — per-entity timeline of all field changes, shown on every detail page with `AuditTimeline` + `AuditEntry` components
-- **Soft delete** — records are never hard-deleted; `deletedAt` column preserves data while hiding it from normal queries
-- **Admin audit log** — `/admin/audit-log` shows a global filterable table of every change across all entities, with restore support for soft-deleted records
-- **Diff engine** — `diffObjects` utility computes before/after diffs and stores structured JSON in the audit record
-
----
-
-### 🧠 AI Enrichment — E2B Sandboxed Agent + Flexible API Key Management *(NEW)*
-
-Background target enrichment (queued, bulk and MCP) now runs inside an **[E2B](https://e2b.dev/) cloud sandbox** — a full Linux environment with a real browser (Chrome). Contact enrichment and interactive target enrichment still use Firecrawl + OpenAI:
-
-- **Real-browser research** — the agent navigates JS-heavy sites, LinkedIn public profiles, and paginated results that a simple API call cannot reach
-- **LLM tool-use loop** — Claude Sonnet 4.6 drives the research with tools: `browser_open`, `browser_snapshot`, `browser_click`, `browser_extract`, `web_search`
-- **C-level contact discovery** — given only a company name, the agent finds all discoverable C-level contacts and creates `crm_Target_Contact` records automatically
-- **Context-aware strategy** — agent skips research it doesn't need (e.g. already has a website → skips domain discovery)
-- **Confidence scoring** — fields below 0.6 confidence are discarded; only empty target fields are overwritten
-- **5-minute timeout per target** — partial results are applied even if the agent times out
-- **Fan-out** — after company enrichment, each discovered contact is enriched independently via a separate Inngest job
-
-**Enrichment API keys** (OpenAI, Firecrawl, Anthropic) are resolved through a **3-tier priority system**, so enrichment works without those keys in `.env`. Other AI features (record embeddings, document enrichment) read `OPENAI_API_KEY` from the environment only, and E2B needs `E2B_API_KEY` in the environment:
-
-```
-ENV variable  →  Admin system-wide  →  User profile
-(highest)                              (lowest)
-```
-
-- **Admin panel** (`/admin/llm-keys`) — set system-wide keys for OpenAI, Firecrawl, Anthropic, and Groq. Keys are encrypted at rest (AES-256-GCM).
-- **Profile settings** (`/profile?tab=llms`) — users configure their own keys as a fallback.
-- **Graceful degradation** — enrichment buttons show an informative dialog when no key is available at any tier.
-
-> **Migration note:** The old `openAi_keys` table is replaced by the new `ApiKeys` table. Run `pnpm prisma migrate deploy` to apply the migration.
-
----
-
-### 🤖 MCP Server — AI Agent Access to CRM Data *(NEW)*
-
-NextCRM now ships with a built-in [Model Context Protocol](https://modelcontextprotocol.io/) server, letting AI agents (Claude, Cursor, custom agents) read and write CRM data directly.
-
-Every tool with its input fields, generated from the code: [MCP tools reference](https://docs.nextcrm.app/docs/reference/mcp-tools).
-
-**Authentication:** Generate Bearer tokens (`nxtc__...`) from your profile page. Tokens are SHA-256 hashed — the raw value is shown only once and never stored.
-
-**Connect your MCP client** (streamable HTTP — recommended):
-```json
-{
-  "mcpServers": {
-    "nextcrm": {
-      "type": "http",
-      "url": "https://your-nextcrm.com/api/mcp/mcp",
-      "headers": { "Authorization": "Bearer nxtc__your_token_here" }
-    }
-  }
-}
-```
-
-The server supports both MCP transports defined by `mcp-handler`:
-- **Streamable HTTP** at `/api/mcp/mcp` — single POST endpoint, current MCP spec default
-- **SSE (legacy)** at `/api/mcp/sse` — GET stream paired with POSTs to `/api/mcp/message` (client auto-discovers the message endpoint)
-
-**Claude Code Skill:** Download the [SKILL.md](/en/profile?tab=developer) from your Developer profile tab for a ready-to-use Claude Code skill with full tool documentation.
-
----
-
-### 🔍 Vector Search + Semantic Similarity *(NEW)*
-
-CRM records (Accounts, Contacts, Leads, Opportunities) are automatically embedded using **OpenAI `text-embedding-3-small`** via [Inngest](https://www.inngest.com/) background jobs.
-
-- **Unified search** — combines keyword (full-text) + semantic (pgvector cosine similarity) results in a single grouped UI
-- **Find Similar** — every CRM detail page has a "Find Similar" button that surfaces semantically related records across the same module
-- **Backfill** — Inngest function to embed all existing records on demand
-- **Auto-embed** — new and updated records are embedded automatically
-
-Powered by **pgvector** (PostgreSQL extension) with HNSW indexes for fast approximate nearest-neighbor search.
-
----
-
-### 🎯 CRM Targets *(NEW)*
-
-New **Targets** module for managing sales targets and target lists — full CRUD, detail view, list management, and MCP tools included.
-
----
-
-### 🔎 Unified Search *(NEW)*
-
-Global search across all CRM entities from a single search bar — grouped results by entity type, loading skeleton, collapsible sections, and combined keyword + semantic scoring.
-
----
-
-## Tech Stack + Features
-
-### Frameworks
-
-- [Next.js 16](https://nextjs.org/) – React framework for building performant apps with the best developer experience (App Router)
-- [Better Auth 1.5.x](https://www.better-auth.com/) – TypeScript-first authentication framework with email OTP, OAuth (Google), admin plugin, and session management
-- [Prisma 7.5](https://www.prisma.io/) – TypeScript-first ORM for PostgreSQL
-- [React Email 2.x](https://react.email/) – Versatile email framework for efficient and flexible email development
-
-### Platforms
-
-- [PostgreSQL 17+](https://www.postgresql.org/) – Powerful open-source relational database with **pgvector** extension for AI embeddings
-- [Resend](https://resend.com/) – A powerful email framework for streamlined email development together with [react.email](https://react.email)
-- [MinIO](https://min.io/) or any S3-compatible storage – for document file storage
-- [Inngest](https://www.inngest.com/) – Background job queue for async embedding and AI workflows
-
-### AI & MCP
-
-- [OpenAI API](https://openai.com/blog/openai-api) – `text-embedding-3-small` for vector embeddings; GPT for project management assistant
-- [Anthropic API](https://www.anthropic.com/) – Claude Sonnet 4.6 drives the E2B enrichment agent tool-use loop
-- [Vercel AI SDK 6.x](https://sdk.vercel.ai/) – Unified AI interface
-- [pgvector](https://github.com/pgvector/pgvector) – PostgreSQL vector extension for similarity search (HNSW indexes)
-- [E2B](https://e2b.dev/) – Cloud sandboxes with real Chrome browser for AI-driven web research and target enrichment
-- [MCP Server](https://modelcontextprotocol.io/) – tools for every CRM module ([reference](https://docs.nextcrm.app/docs/reference/mcp-tools)) via `mcp-handler` (Vercel MCP adapter), Bearer token auth, streamable HTTP (`/api/mcp/mcp`) + legacy SSE (`/api/mcp/sse`, needs `REDIS_URL`) transports
-
-### Data fetching
-
-- [SWR](https://swr.vercel.app/) – React Hooks library for remote data fetching
-- [Axios](https://axios-http.com/) – Promise based HTTP client for the browser and node.js
-- [Server Actions]() – for server side data fetching and mutations
-- [TanStack React Table](https://tanstack.com/table) – for data tables and server/client side data fetching
-
-### UI
-
-- [Tailwind CSS v4](https://tailwindcss.com/) – Utility-first CSS framework for rapid UI development
-- [shadcn/ui](https://ui.shadcn.com/) – Re-usable components built using Radix UI and Tailwind CSS
-- [Tremor](https://www.tremor.so/) – A platform for creating charts
-- [Lucide React](https://lucide.dev/) – Beautiful and consistent open-source icons
-
-### i18n
-
-- [next-intl](https://next-intl-docs.vercel.app/) – Internationalization for Next.js — English, Czech, German, Ukrainian
-
-![hero](/public/og.png)
-
-## Roadmap
-
-1. ✅ Docker version — complete bundle to run NextCRM on-premise
-2. ✅ Upgrade to Next.js 16 — running on Next.js 16 with React 19
-3. ✅ i18n / localization — 4 languages (English, Czech, German, Ukrainian)
-4. ✅ Email client — IMAP/SMTP email client built in
-5. ✅ PostgreSQL migration — migrated from MongoDB to PostgreSQL 17+
-6. ✅ pgvector embeddings — automatic semantic embeddings via Inngest + OpenAI
-7. ✅ Vector similarity search — "Find Similar" on all CRM entity detail pages
-8. ✅ Unified search — keyword + semantic search across all CRM modules
-9. ✅ CRM Targets module — sales target and target list management
-10. ✅ MCP server — 25 CRM tools for AI agent access via Bearer token auth
-11. ✅ AI enrichment — E2B sandboxed agent (real browser + Claude Sonnet) for target enrichment; C-level contact discovery; 3-tier API key management (ENV → admin → user)
-12. ✅ Audit log & history — soft delete + full field-level change trail on all CRM entities; global admin audit log page
-13. ✅ CRM Activities — notes, calls, emails, meetings, tasks linked to any CRM entity; paginated feed on all detail pages
-14. ✅ Invoices module — full invoicing workflow with line items, tax engine, multi-currency, invoice series, payments, PDF export, and email delivery
-15. 🔄 More AI powered features — daily summary of tasks and projects
-15. 📋 Email campaigns management — integration with MailChimp and Listmonk
-16. 📋 Testing expansion — Jest + Playwright coverage (contributions welcome!)
-17. 🔄 Fix all TypeScript `any` types — ongoing cleanup
-
-## Emails
-
-We use [resend.com](https://resend.com) + [react.email](https://react.email) as primary email sender and email templates.
-
-### Mailtrap (Email API/SMTP)
-
-NextCRM supports [Mailtrap](https://mailtrap.io) as an alternative email provider to Resend, for both production sending and safe dev/staging testing through a single API.
-
-**Sending emails (production):**
-
-1. Sign up at [mailtrap.io](https://mailtrap.io) and create a Sending domain.
-2. Copy your API token.
-3. Add it to your `.env.local`: MAILTRAP_API_KEY=
-
-**Testing emails (dev/staging, optional):**
-
-Use a Mailtrap Sandbox inbox instead of a production domain during development, so test emails (OTP, invoices, notifications) never reach real inboxes.
-
-## Reports
-
-We use Tremor charts as a tool for creating charts in NextCRM
-
-![hero](/public/reports.png)
-
-## Video (YouTube channel with functions showcase)
-
-[Youtube Channel](https://www.youtube.com/@NextCRM_IO) </br>
-[Invoice module (video)](https://youtu.be/NSMsBMy07Pg)
-
-## Documentation
-
-Read the docs at [docs.nextcrm.app](https://docs.nextcrm.app): user guide, admin guide and developer guide. Source lives in [`apps/docs`](apps/docs).
-
-## Installation
-
-<details><summary><b>Show instructions</b></summary>
-
-1. Clone the repository:
-
-   ```sh
-   git clone https://github.com/pdovhomilja/nextcrm-app.git
-   cd nextcrm-app
-   ```
-
-1. Install the preset:
-
-   ```sh
-   pnpm install
-   ```
-
-1. Copy the environment variables to .env
-
-   Linux / macOS:
-
-   ```sh
-   cp .env.example .env
-   cp .env.local.example .env.local
-   ```
-
-   Windows (PowerShell):
-
-   ```powershell
-   Copy-Item .env.example .env
-   Copy-Item .env.local.example .env.local
-   ```
-
-   Windows (Command Prompt):
-
-   ```cmd
-   copy .env.example .env
-   copy .env.local.example .env.local
-   ```
-
-   **.env**
-
-   > > - You will need a PostgreSQL connection string for Prisma ORM
-   > > - Example: `DATABASE_URL="postgresql://user:pass@localhost:5432/nextcrm?schema=public"`
-   > > - Requires PostgreSQL 17+ with the **pgvector** extension enabled
-
-   **.env.local**
-
-   > > - BETTER_AUTH_SECRET - for auth
-   > > - MinIO / S3 (`MINIO_*`) - for storing files
-   > > - openAI - for embeddings and project management assistant *(embeddings need `OPENAI_API_KEY` in the environment; enrichment can use an admin-panel key instead)*
-   > > - Firecrawl - for contact/target enrichment *(optional — can be set via admin panel instead)*
-   > > - Resend (`RESEND_API_KEY`, `EMAIL_FROM`) and optional SMTP (`EMAIL_HOST`, …) for emails
-   > > - Inngest - for background jobs (`INNGEST_DEV=1` with the local dev server from `pnpm inngest:up`)
-   > > - `EMAIL_ENCRYPTION_KEY` - required for encrypting API keys stored in the database
-
-1. Init Prisma
-
-   ```sh
-    pnpm prisma generate
-    pnpm prisma migrate deploy
-   ```
-
-1. Import initial data from initial-data folder
-
-   ```sh
-   pnpm prisma db seed
-   ```
-
-1. Run app on local
-
-   ```sh
-   pnpm run dev
-   ```
-
-1. http://localhost:3000
-
-</details>
-
-## Docker Installation (Recommended for Self-Hosting)
-
-The fastest way to run NextCRM is with Docker Compose. The provided `docker-compose.yml` bundles everything you need: the app, PostgreSQL (with pgvector), MinIO for file storage, and Inngest for background jobs. No manual setup of databases, buckets, or migrations — it all happens automatically on first start.
-
-### Quick Start
-
-```sh
-git clone https://github.com/pdovhomilja/nextcrm-app.git
-cd nextcrm-app
-cp .env.docker .env
-nano .env                # set ADMIN_EMAIL to a real email you own
-docker compose up -d
-```
-
-> **Windows:** `cp` and `nano` are not available on Windows. Use `Copy-Item` (PowerShell) or `copy` (Command Prompt) to copy the file, and edit it with `notepad`:
->
-> ```powershell
-> Copy-Item .env.docker .env
-> notepad .env           # set ADMIN_EMAIL to a real email you own
-> ```
-
-Open [http://localhost:3000](http://localhost:3000) — the app is ready, the schema is migrated, and the seeded admin user matches the `ADMIN_EMAIL` you set.
-
-> [!IMPORTANT]
-> NextCRM uses **passwordless Email OTP** for login. You MUST set `ADMIN_EMAIL` to an address you control AND provide a `RESEND_API_KEY` (or another email provider) so OTP codes can actually be delivered. Without an email provider, you can still log in by reading the OTP straight from the database — convenient for first-time testing, not for production.
-
-### What you get
-
-| Service | Purpose | Exposed |
-|---|---|---|
-| `app` | NextCRM (Next.js standalone build) | `localhost:3000` |
-| `postgres` | PostgreSQL 17 with pgvector | internal only |
-| `minio` | S3-compatible object storage | `127.0.0.1:9000` |
-| `inngest` | Background job runner (self-hosted, signed requests) | internal only |
-
-The app is published on port `3000`. MinIO's S3 port is published on `127.0.0.1:9000` because browsers upload and download files directly from MinIO; on a server, give MinIO its own domain and set `MINIO_PUBLIC_URL` to it. Postgres and Inngest stay on the internal Docker network. Uncomment the relevant `ports:` blocks in `docker-compose.yml` if you need direct access (e.g. for psql or the MinIO console).
-
-### Configuring environment variables
-
-You **never edit `Dockerfile` or `docker-compose.yml`** to add your secrets. Instead, create a `.env` file in the project root — Docker Compose reads it automatically and injects the values into the container.
+Docker Compose starts Harbor, PostgreSQL, file storage, and background jobs. Migrations run on first start.
 
 ```sh
 cp .env.docker .env
-nano .env       # set ADMIN_EMAIL, internal service passwords, and any optional API keys
+```
+
+Set `ADMIN_EMAIL` to an address you control, then:
+
+```sh
 docker compose up -d
 ```
 
-Windows (PowerShell):
+Open http://localhost:3000.
 
-```powershell
-Copy-Item .env.docker .env
-notepad .env    # set ADMIN_EMAIL, internal service passwords, and any optional API keys
-docker compose up -d
-```
-
-> [!WARNING]
-> The bundled Postgres and MinIO containers ship with a placeholder password (`changeme`) so the stack works on first run. Postgres is not exposed to the host and MinIO only on `127.0.0.1`, so this is safe for local experimentation. **For any deployment beyond your laptop**, set strong values for `POSTGRES_PASSWORD` and `MINIO_ROOT_PASSWORD` in your `.env` file before starting the stack.
-
-On a server, also set the two public URLs:
-
-```bash
-APP_URL=https://crm.example.com          # what people open; used for auth and links
-MINIO_PUBLIC_URL=https://files.example.com  # what browsers use to reach MinIO
-```
-
-**Secrets.** `BETTER_AUTH_SECRET`, `EMAIL_ENCRYPTION_KEY`, `INNGEST_SIGNING_KEY` and `INNGEST_EVENT_KEY` are generated on first start and stored in the `app_data` volume, so they survive restarts and upgrades. You can set them in `.env` instead; a value in the environment always wins. Never change them once set: a new `BETTER_AUTH_SECRET` logs everyone out, a new `EMAIL_ENCRYPTION_KEY` makes stored mailbox passwords and API keys unreadable.
-
-The `.env.docker` file lists every supported variable with comments. Beyond the internal service passwords, you only need to add values for **optional external integrations** you want to enable. API keys left empty can also be entered in the admin panel; an environment value always wins over the admin panel:
-
-```bash
-# Example .env
-OPENAI_API_KEY=sk-your-real-key       # enables AI features
-GOOGLE_ID=...apps.googleusercontent.com  # enables Google OAuth
-GOOGLE_SECRET=GOCSPX-...
-RESEND_API_KEY=re_...                 # enables transactional email
-EMAIL_FROM=noreply@yourdomain.com     # verified Resend sender for login codes
-FIRECRAWL_API_KEY=fc-...              # enables contact enrichment
-```
-
-`.env` is in `.gitignore`, so your secrets never get committed.
-
-### Persistent data
-
-Data persists across restarts in four named volumes:
-
-- `postgres_data` — your database
-- `minio_data` — uploaded files
-- `app_data` — generated secrets (`/app/data/secrets`); back it up with the database
-- `inngest_data` — background job state (queued runs, schedules)
-
-```sh
-docker compose down        # stops services, keeps data
-docker compose down -v     # stops services AND wipes all data
-```
-
-### Updating to a new release
-
-```sh
-git pull
-docker compose up -d --build
-```
-
-The entrypoint runs `prisma migrate deploy` on every start, so new schema changes are applied automatically. The seed only runs on first install (when no users exist), so your data is safe across upgrades.
-
-Upgrading an instance installed before document files became private? Run the one-time bucket policy step in [docs/deployment/private-document-files.md](docs/deployment/private-document-files.md).
-
-### Coolify, Portainer, etc.
-
-This setup works with self-hosting platforms:
-
-- **Coolify** — point it at this repo, choose "Docker Compose" build pack with `/docker-compose-coolify.yml`, set your env vars in Coolify's UI (required ones are listed at the top of that file). Assign your domain to the `app` service (port 3000) and a second domain to `minio` (port 9000), then set `APP_URL` and `MINIO_PUBLIC_URL` to them.
-- **Portainer / Dockge** — paste `docker-compose.yml` into a stack, add env vars in the UI
-
-In all cases, env vars set through the platform UI override the defaults in `docker-compose.yml` the same way a `.env` file does locally.
-
-### First login
-
-After first start, the seeded admin account uses whatever you set in `ADMIN_EMAIL`. Since login is passwordless Email OTP, there are two paths:
-
-**With email provider configured (recommended)**
-
-Set `RESEND_API_KEY` and `EMAIL_FROM` in `.env`, then enter your `ADMIN_EMAIL` on the sign-in page and check your inbox for the OTP.
-
-**Without email provider (first-run testing)**
-
-Read the OTP directly from the database:
+Sign-in is a one-time email code. Set `RESEND_API_KEY` and `EMAIL_FROM` so the code is delivered. Without an email provider, read the latest code from the database:
 
 ```sh
 docker compose exec postgres psql -U nextcrm -d nextcrm \
   -c 'SELECT identifier, value, "expiresAt" FROM verification ORDER BY "createdAt" DESC LIMIT 1;'
 ```
 
-(`identifier` ends with the email; `value` is the OTP code followed by `:` and the attempt count, e.g. `606331:0`.)
+`value` is the code, then a colon and the attempt count (for example `606331:0`).
 
-Use that OTP on the sign-in page. After login, configure an email provider from the Admin panel so future logins work normally.
+| Service | Role | Address |
+|---|---|---|
+| App | Harbor | `localhost:3000` |
+| Postgres | Database | internal |
+| MinIO | Files | `127.0.0.1:9000` |
+| Inngest | Background jobs | internal |
 
-## Contact
+On a server, set `APP_URL` and `MINIO_PUBLIC_URL` to the public addresses, and replace the default `changeme` passwords for Postgres and MinIO before anyone else can reach the machine.
 
-[www.dovhomilja.cz](https://www.dovhomilja.cz)
-</br>
-[<img alt="X (formerly Twitter) URL" src="https://img.shields.io/twitter/url?url=https%3A%2F%2Ftwitter.com%2Fdovhomilja">
-](https://twitter.com/dovhomilja)
+`BETTER_AUTH_SECRET`, `EMAIL_ENCRYPTION_KEY`, `INNGEST_SIGNING_KEY`, and `INNGEST_EVENT_KEY` are generated on first start and kept in the `app_data` volume. Do not change them later: a new auth secret signs everyone out, and a new encryption key makes stored mailbox passwords and API keys unreadable.
 
-## Contributing
+Optional keys in `.env` turn on extra features. An empty key can also be entered later in the admin panel.
 
-We are open to the NextCRM community contributions. Every contribution is welcome.
+```bash
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+GOOGLE_ID=
+GOOGLE_SECRET=
+RESEND_API_KEY=
+EMAIL_FROM=
+FIRECRAWL_API_KEY=
+```
 
-### Issues
+```sh
+docker compose down        # stop, keep data
+docker compose down -v     # stop and delete data
+docker compose up -d --build
+```
 
-- [Open an issue](https://github.com/pdovhomilja/nextcrm-app/issues) if you find a bug or have a suggestion for improvements.
+Volumes: `postgres_data`, `minio_data`, `app_data`, `inngest_data`.
 
-### NextCRM Super heroes
+## Run from source
 
-<a href="https://github.com/pdovhomilja/nextcrm-app/graphs/contributors">
-<img src="https://contrib.rocks/image?repo=pdovhomilja/nextcrm-app" />
-</a>
+Requirements: Node.js 22+, pnpm 10+, PostgreSQL 17 with pgvector.
 
-Made with [contrib.rocks](https://contrib.rocks).
+```sh
+pnpm install
+cp .env.example .env
+cp .env.local.example .env.local
+pnpm prisma generate
+pnpm prisma migrate deploy
+pnpm prisma db seed
+pnpm dev
+```
 
-## Repo Activity
-
-![Alt](https://repobeats.axiom.co/api/embed/e6bed6e15724f38c278ad2edcf0573a1bb24bed6.svg "Repobeats analytics image")
-
-## Star History
-
-<a href="https://www.star-history.com/?type=timeline&repos=pdovhomilja%2Fnextcrm-app">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=pdovhomilja/nextcrm-app&type=timeline&theme=dark&legend=top-left&sealed_token=K4hXRI40If9iqw449EdBDzIuSwzTy862Gd3Z9DHyD2G0rXXE5AtVKWCtzv6OFB8hbw0TKBkWevH-XU9LETwZgkF0AuD3p8_ZxXj4NTuWP5PdeV6C-xjboh2XiRP68ouog-IYwkdXzGmWkI5Vcn82111CbOIX2u8snev61AI_fx8-d0Stlr7ftKsAVWbX" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=pdovhomilja/nextcrm-app&type=timeline&legend=top-left&sealed_token=K4hXRI40If9iqw449EdBDzIuSwzTy862Gd3Z9DHyD2G0rXXE5AtVKWCtzv6OFB8hbw0TKBkWevH-XU9LETwZgkF0AuD3p8_ZxXj4NTuWP5PdeV6C-xjboh2XiRP68ouog-IYwkdXzGmWkI5Vcn82111CbOIX2u8snev61AI_fx8-d0Stlr7ftKsAVWbX" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=pdovhomilja/nextcrm-app&type=timeline&legend=top-left&sealed_token=K4hXRI40If9iqw449EdBDzIuSwzTy862Gd3Z9DHyD2G0rXXE5AtVKWCtzv6OFB8hbw0TKBkWevH-XU9LETwZgkF0AuD3p8_ZxXj4NTuWP5PdeV6C-xjboh2XiRP68ouog-IYwkdXzGmWkI5Vcn82111CbOIX2u8snev61AI_fx8-d0Stlr7ftKsAVWbX" />
- </picture>
-</a>
+`DATABASE_URL` in `.env` must point at that Postgres database. Put auth, storage, and mail settings in `.env.local`. The app listens on http://localhost:3000.
 
 ## License
 
-Licensed under the [MIT license](https://github.com/pdovhomilja/nextcrm-app/blob/main/LICENSE).
+Harbor is licensed under the MIT license. See [LICENSE](LICENSE).
