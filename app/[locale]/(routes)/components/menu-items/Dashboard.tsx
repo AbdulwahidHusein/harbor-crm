@@ -1,4 +1,4 @@
-import { Home } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 import { NavItem } from "../nav-main";
 
 /**
@@ -19,7 +19,7 @@ export const getDashboardMenuItem = ({ title }: Props): NavItem => {
   return {
     title: title,
     url: "/",
-    icon: Home,
+    icon: LayoutGrid,
     // Active state will be detected by NavMain using pathname
   };
 };

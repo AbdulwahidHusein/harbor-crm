@@ -1059,6 +1059,9 @@ model Users {
   invoiceActivity              Invoice_Activity[]    @relation("InvoiceActivityActor")
   ordersOwned crm_Orders[] @relation("OrderOwner")
 
+  ai_insights   crm_AI_Insights[]   @relation("ai_insight_user")
+  ai_dismissals crm_AI_Dismissals[] @relation("ai_dismissal_user")
+
   @@index([email])
   @@index([userStatus])
   @@index([userLanguage])
@@ -2297,4 +2300,59 @@ model crm_OrderLines {
 
   @@index([orderId])
   @@index([productId])
+}
+
+// ---------------------------------------------------------------------------
+// NextCRM Intelligence
+// ---------------------------------------------------------------------------
+
+enum crm_AI_Insight_Status {
+  PENDING
+  GENERATING
+  READY
+  FAILED
+}
+
+/// Cached AI synthesis for a record. One row per (kind, entity, viewer):
+/// the context is gathered with the viewer's own read scope (e.g. only his
+/// own mailbox), so an insight is never shown to another user.
+/// `sourceHash` fingerprints the CRM data the insight was generated from;
+/// when the live hash differs the UI marks the insight as out of date.
+model crm_AI_Insights {
+  id              String                @id @default(uuid()) @db.Uuid
+  kind            String                /// relationship | deal | briefing
+  entityType      String                /// contact | account | opportunity | user
+  entityId        String                @db.Uuid
+  userId          String                @db.Uuid
+  status          crm_AI_Insight_Status @default(PENDING)
+  payload         Json?                 @db.JsonB
+  /// Handle → record map used to resolve citations in `payload`.
+  sources         Json?                 @db.JsonB
+  sourceHash      String?
+  model           String?
+  error           String?
+  generatedAt     DateTime?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  user Users @relation("ai_insight_user", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([kind, entityType, entityId, userId])
+  @@index([userId])
+  @@index([entityType, entityId])
+}
+
+/// A briefing recommendation a user dismissed. It stays hidden until
+/// `expiresAt`; if the underlying condition still holds after that it returns.
+model crm_AI_Dismissals {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  signalKey   String
+  dismissedAt DateTime @default(now())
+  expiresAt   DateTime?
+
+  user Users @relation("ai_dismissal_user", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, signalKey])
+  @@index([userId])
 }

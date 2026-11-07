@@ -9,6 +9,8 @@ import { requireAuthenticated, isManagerOrAdmin } from "@/lib/authz";
 import { getAccountTabs, getAccountPanels } from "@/lib/plugins/slots";
 import { PluginSlot } from "@/lib/plugins/ui/PluginSlot";
 import { FindSimilarButton } from "@/components/crm/find-similar-button";
+import { RecordIntelligence } from "@/components/intelligence/record-intelligence";
+import Link from "next/link";
 
 import { getAccount } from "@/actions/crm/get-account";
 import { getAllCrmData } from "@/actions/crm/get-crm-data";
@@ -109,17 +111,31 @@ const AccountDetailPage = async (props: AccountDetailPageProps) => {
     .filter((p) => p.status === "ACTIVE")
     .map((p) => ({ id: p.id, name: p.name, currency: p.currency }));
 
-  if (!account) return <div>Account not found</div>;
+  if (!account) {
+    return (
+      <Container title="Company not found" description="It may have been deleted, or you don't have access to it.">
+        <Link href="/crm/accounts" className="text-sm text-primary hover:underline">
+          Back to companies
+        </Link>
+      </Container>
+    );
+  }
 
   return (
     <Container
-      title={`Account: ${account?.name}`}
-      description={"Everything you need to know about sales potential"}
+      title={account.name}
+      description={[account.type, account.status].filter(Boolean).join(" · ") || undefined}
+      eyebrow={
+        <Link href="/crm/accounts" className="hover:text-foreground">
+          Companies
+        </Link>
+      }
+      actions={<FindSimilarButton entityType="account" recordId={accountId} />}
     >
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="history">Change history</TabsTrigger>
           <TabsTrigger value="orders">{to("ordersTab")}</TabsTrigger>
           {await Promise.all(pluginTabs.map(async ({ plugin, tab }) => {
             const tp = await getTranslations(`plugins.${plugin.definition.id}` as never);
@@ -127,8 +143,9 @@ const AccountDetailPage = async (props: AccountDetailPageProps) => {
           }))}
         </TabsList>
         <TabsContent value="overview">
-          <div className="space-y-5">
+          <div className="space-y-8">
             <BasicView data={account} />
+            {sessionUserRole !== "partner" ? <RecordIntelligence entityType="account" entityId={account.id} /> : null}
             {pluginPanels.map(({ plugin, panel }) => (
               <PluginSlot key={`${plugin.definition.id}:${panel.id}`} plugin={plugin} actor={actor} render={(ctx) => panel.component({ accountId: account.id, ctx })} />
             ))}
@@ -148,7 +165,6 @@ const AccountDetailPage = async (props: AccountDetailPageProps) => {
               />
             )}
             <ActivitiesSection accountId={account.id} />
-            <FindSimilarButton entityType="account" recordId={accountId} />
             <AccountsTasksView data={tasks} account={account} />
             <OpportunitiesView
               data={opportunities}

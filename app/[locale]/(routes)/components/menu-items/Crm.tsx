@@ -1,4 +1,4 @@
-import { Coins } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { NavItem } from "../nav-main";
 
 /**
@@ -30,7 +30,7 @@ type Props = {
 export const getCrmMenuItem = ({ localizations, role }: Props): NavItem => {
   return {
     title: localizations.title,
-    icon: Coins,
+    icon: Building2,
     items: [
       {
         title: "Dashboard",

@@ -9,7 +9,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Puzzle } from "lucide-react";
+import { Command, Puzzle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
@@ -97,6 +97,7 @@ export function AppSidebar({
 
   const navItems = [
     getDashboardMenuItem({ title: dict?.dashboard || "Dashboard" }),
+    { title: "Command Center", url: "/intelligence", icon: Command },
     getCrmMenuItem({ localizations: dict.crm, role: session?.user?.role ?? undefined }),
     getCampaignsMenuItem({
       localizations: {
@@ -135,33 +136,28 @@ export function AppSidebar({
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      {/* Header with Logo and Branding */}
-      <SidebarHeader>
+      {/* Brand: square monogram + wordmark. No animation, no gradient. */}
+      <SidebarHeader className="h-14 justify-center border-b border-sidebar-border px-3">
         <div
           className={cn(
-            "flex items-center py-1",
-            isExpanded ? "gap-x-4" : "justify-center",
+            "flex items-center",
+            isExpanded ? "gap-2.5" : "justify-center",
           )}
         >
-          {/* "N" Branding Symbol with rotation animation */}
           <div
-            className={cn(
-              "flex-shrink-0 border rounded-full px-4 py-2 transition-transform duration-500",
-              isExpanded && "rotate-[360deg]",
-            )}
+            aria-hidden
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[6px] bg-sidebar-primary text-[13px] font-semibold text-sidebar-primary-foreground"
           >
-            N
+            {appName.charAt(0).toUpperCase()}
           </div>
-
-          {/* App Name - visible when expanded, hidden when collapsed */}
-          <h1
+          <span
             className={cn(
-              "origin-left font-medium text-xl transition-all overflow-hidden whitespace-nowrap",
-              !isExpanded ? "w-0 opacity-0" : "w-auto opacity-100",
+              "truncate text-[15px] font-semibold tracking-tight text-sidebar-primary transition-opacity",
+              !isExpanded ? "w-0 opacity-0" : "opacity-100",
             )}
           >
             {appName}
-          </h1>
+          </span>
         </div>
       </SidebarHeader>
 

@@ -11,8 +11,8 @@ const TargetViewPage = async (props: any) => {
 
   return (
     <Container
-      title={`Target detail view: ${target?.first_name || ""} ${target?.last_name}`}
-      description="Everything you need to know about this target"
+      title={[target?.first_name, target?.last_name].filter(Boolean).join(" ") || "Target"}
+      description="Campaign target"
     >
       <div className="space-y-5">
         <BasicView data={target} />

@@ -4,6 +4,8 @@ import React from "react";
 import { BasicView } from "./components/BasicView";
 import { FindSimilarButton } from "@/components/crm/find-similar-button";
 import LineItemsSection from "./components/LineItemsSection";
+import { RecordIntelligence } from "@/components/intelligence/record-intelligence";
+import Link from "next/link";
 
 import DocumentsView from "../../components/DocumentsView";
 import ContactsView from "../../components/ContactsView";
@@ -54,21 +56,36 @@ const OpportunityView = async (
     ? serializeDecimalsList(opportunity.lineItems as any[])
     : [];
 
-  if (!opportunity) return <div>Opportunity not found</div>;
+  if (!opportunity) {
+    return (
+      <Container title="Opportunity not found" description="It may have been deleted, or you don't have access to it.">
+        <Link href="/crm/opportunities" className="text-sm text-primary hover:underline">
+          Back to opportunities
+        </Link>
+      </Container>
+    );
+  }
 
   return (
     <Container
-      title={`Opportunity ${opportunity.name} - detail view`}
-      description={"Description - " + opportunity.description}
+      title={opportunity.name ?? "Untitled opportunity"}
+      description={(opportunity as any).assigned_account?.name ?? undefined}
+      eyebrow={
+        <Link href="/crm/opportunities" className="hover:text-foreground">
+          Opportunities
+        </Link>
+      }
+      actions={<FindSimilarButton entityType="opportunity" recordId={opportunityId} />}
     >
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="history">Change history</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
-          <div className="space-y-5">
+          <div className="space-y-8">
             <BasicView data={opportunity as any} />
+            <RecordIntelligence entityType="opportunity" entityId={opportunityId} />
             <LineItemsSection
               opportunityId={opportunityId}
               lineItems={serializedLineItems}
@@ -76,7 +93,6 @@ const OpportunityView = async (
               products={activeProducts}
             />
             <ActivitiesSection opportunityId={opportunityId} />
-            <FindSimilarButton entityType="opportunity" recordId={opportunityId} />
             <AccountsView crmData={crmData} data={accounts} />
             <ContactsView crmData={crmData} data={contacts} />
             <DocumentsView data={documents} />

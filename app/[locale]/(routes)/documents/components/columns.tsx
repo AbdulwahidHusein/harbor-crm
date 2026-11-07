@@ -11,9 +11,9 @@ import moment from "moment";
 
 const MIME_LABELS: Record<string, { label: string; className: string }> = {
   "application/pdf": { label: "PDF", className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
-  "image/": { label: "IMG", className: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" },
-  "application/vnd.openxmlformats": { label: "DOCX", className: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200" },
-  "application/msword": { label: "DOC", className: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200" },
+  "image/": { label: "IMG", className: "bg-muted text-foreground" },
+  "application/vnd.openxmlformats": { label: "DOCX", className: "bg-muted text-foreground" },
+  "application/msword": { label: "DOC", className: "bg-muted text-foreground" },
   "text/plain": { label: "TXT", className: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200" },
 };
 

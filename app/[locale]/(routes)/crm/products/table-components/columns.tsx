@@ -23,7 +23,7 @@ function formatPrice(value: number, currency: string): string {
 const typeColorMap: Record<string, string> = {
   PRODUCT: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
   SERVICE:
-    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+    "bg-muted text-foreground",
 };
 
 const statusColorMap: Record<string, string> = {

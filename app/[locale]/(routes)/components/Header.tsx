@@ -34,24 +34,23 @@ type Props = {
  */
 const Header = ({ id, lang }: Props) => {
   return (
-    <>
-      <div className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <FulltextSearch />
-        </div>
-        <div className="flex items-center gap-2">
-          <CommandComponent />
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border bg-background/95 px-3 backdrop-blur-[2px] sm:px-5">
+      <div className="flex min-w-0 items-center gap-2">
+        <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground" />
+        <Separator orientation="vertical" className="mr-1 h-4" />
+        <FulltextSearch />
+      </div>
+      <div className="flex items-center gap-1">
+        <CommandComponent />
+        <div className="hidden items-center gap-1 md:flex">
           <SetLanguage userId={id} />
           <Feedback />
           <CurrencySwitcher />
-          <ThemeToggle />
-          <SupportComponent />
         </div>
+        <ThemeToggle />
+        <SupportComponent />
       </div>
-      <Separator />
-    </>
+    </header>
   );
 };
 

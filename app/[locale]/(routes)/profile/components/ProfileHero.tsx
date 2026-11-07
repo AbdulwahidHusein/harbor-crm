@@ -11,14 +11,14 @@ export async function ProfileHero({ data }: Props) {
   const t = await getTranslations("ProfilePage");
 
   return (
-    <div className="bg-gradient-to-r from-blue-500 to-violet-600 px-7 py-6 flex items-center gap-4">
+    <div className="flex items-center gap-4 border-b border-border px-7 py-6">
       <ProfileHeroAvatar avatar={data.avatar} name={data.name} />
       <div>
-        <div className="text-white text-lg font-bold leading-tight">
+        <div className="text-lg font-semibold leading-tight text-foreground">
           {data.name}
         </div>
-        <div className="text-white/75 text-sm">{data.email}</div>
-        <span className="mt-1.5 inline-block rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold text-white">
+        <div className="text-sm text-muted-foreground">{data.email}</div>
+        <span className="mt-1.5 inline-block rounded-[5px] bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
           {t("hero.role")}
         </span>
       </div>

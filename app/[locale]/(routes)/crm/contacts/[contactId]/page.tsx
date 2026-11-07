@@ -1,7 +1,7 @@
+import Link from "next/link";
 import Container from "@/app/[locale]/(routes)/components/ui/Container";
-
-import { BasicView } from "./components/BasicView";
 import { FindSimilarButton } from "@/components/crm/find-similar-button";
+import { RecordIntelligence } from "@/components/intelligence/record-intelligence";
 
 import { getContact } from "@/actions/crm/get-contact";
 import { getOpportunitiesFullByContactId } from "@/actions/crm/get-opportunities-with-includes-by-contactId";
@@ -15,40 +15,96 @@ import DocumentsView from "../../components/DocumentsView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HistoryTab } from "./components/HistoryTab";
 import { ActivitiesSection } from "./components/ActivitiesSection";
+import { ContactProfile } from "./components/ContactProfile";
+import { EnrichButton } from "./components/EnrichButton";
+import { ContactDetailActions } from "./components/ContactDetailActions";
 
-const ContactViewPage = async (props: any) => {
-  const params = await props.params;
-  const { contactId } = params;
+/**
+ * Contact workspace: relationship intelligence and the activity timeline in
+ * the main column, the record's properties in a compact sidebar.
+ */
+const ContactViewPage = async (props: { params: Promise<{ contactId: string }> }) => {
+  const { contactId } = await props.params;
   const contact: any = await getContact(contactId);
-  const opportunities: any = await getOpportunitiesFullByContactId(contactId);
-  const documents = await getDocumentsByContactId(contactId);
-  const accounts = await getAccountsByContactId(contactId);
-  const crmData = await getAllCrmData();
 
-  //  console.log(accounts, "accounts");
+  if (!contact) {
+    return (
+      <Container title="Contact not found" description="It may have been deleted, or you don't have access to it.">
+        <Link href="/crm/contacts" className="text-sm text-primary hover:underline">
+          Back to contacts
+        </Link>
+      </Container>
+    );
+  }
 
-  if (!contact) return <div>Contact not found</div>;
+  const [opportunities, documents, accounts, crmData] = await Promise.all([
+    getOpportunitiesFullByContactId(contactId) as Promise<any>,
+    getDocumentsByContactId(contactId),
+    getAccountsByContactId(contactId),
+    getAllCrmData(),
+  ]);
+
+  const name = [contact.first_name, contact.last_name].filter(Boolean).join(" ");
+  const subtitle = [contact.position, contact.assigned_accounts?.name].filter(Boolean).join(" · ");
 
   return (
     <Container
-      title={`Contact detail view: ${contact?.first_name} ${contact?.last_name}`}
-      description={"Everything you need to know about sales potential"}
+      title={name}
+      description={subtitle || undefined}
+      eyebrow={
+        <Link href="/crm/contacts" className="hover:text-foreground">
+          Contacts
+        </Link>
+      }
+      actions={
+        <>
+          <FindSimilarButton entityType="contact" recordId={contactId} />
+          <EnrichButton
+            contactId={contact.id}
+            contactEmail={contact.email ?? null}
+            contactCurrentData={{
+              position: contact.position ?? null,
+              website: contact.website ?? null,
+              social_linkedin: contact.social_linkedin ?? null,
+              social_twitter: contact.social_twitter ?? null,
+              social_facebook: contact.social_facebook ?? null,
+              social_instagram: contact.social_instagram ?? null,
+              description: contact.description ?? null,
+              office_phone: contact.office_phone ?? null,
+              mobile_phone: contact.mobile_phone ?? null,
+            }}
+          />
+          <ContactDetailActions contact={contact} contactTypes={crmData.contactTypes} />
+        </>
+      }
     >
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="related">Deals & documents</TabsTrigger>
+          <TabsTrigger value="history">Change history</TabsTrigger>
         </TabsList>
+
         <TabsContent value="overview">
-          <div className="space-y-5">
-            <BasicView data={contact} />
-            <ActivitiesSection contactId={contact.id} />
-            <FindSimilarButton entityType="contact" recordId={contactId} />
-            <AccountsView data={accounts} crmData={crmData} />
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="min-w-0 space-y-8">
+              <RecordIntelligence entityType="contact" entityId={contact.id} />
+              <ActivitiesSection contactId={contact.id} />
+            </div>
+            <aside className="order-first xl:order-none xl:border-l xl:border-border xl:pl-8">
+              <ContactProfile data={contact} />
+            </aside>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="related">
+          <div className="space-y-8">
             <OpportunitiesView data={opportunities} crmData={crmData} />
+            <AccountsView data={accounts} crmData={crmData} />
             <DocumentsView data={documents} />
           </div>
         </TabsContent>
+
         <TabsContent value="history">
           <HistoryTab contactId={contactId} />
         </TabsContent>
