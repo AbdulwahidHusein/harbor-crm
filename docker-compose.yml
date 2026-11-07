@@ -101,7 +101,7 @@ services:
       DB_NAME: ${POSTGRES_DB:-nextcrm}
 
       # App + auth (public URL of this instance, e.g. https://crm.example.com)
-      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-NextCRM}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Harbor CRM}
       NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3000}
       BETTER_AUTH_URL: ${APP_URL:-http://localhost:3000}
       # Set once, never change. When empty, the entrypoint generates them on

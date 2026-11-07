@@ -1,14 +1,12 @@
 import { LoginComponent } from "./components/LoginComponent";
+import { BRAND } from "@/lib/brand";
 
 const SignInPage = async () => {
   return (
-    <div className="h-full">
-      <div className="py-10">
-        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-          Welcome to {process.env.NEXT_PUBLIC_APP_NAME}
-        </h1>
-      </div>
-      <div>
+    <div className="w-full max-w-md">
+      <h1 className="text-2xl font-semibold tracking-tight">Sign in to {BRAND.name}</h1>
+      <p className="mt-1 text-sm text-muted-foreground">Pick up where your relationships left off.</p>
+      <div className="mt-8">
         <LoginComponent />
       </div>
     </div>

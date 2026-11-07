@@ -1,5 +1,5 @@
 /**
- * NextCRM Intelligence — shared types.
+ * Harbor CRM Intelligence — shared types.
  *
  * Two layers, deliberately separated in the UI:
  *  - Signals: deterministic facts computed from CRM records. Always available,

@@ -161,7 +161,7 @@ export async function generateInsight(user: AuthzUser, entityType: InsightEntity
         userId: user.id,
         schema: dealInsightSchema,
         schemaName: "deal_insight",
-        system: `You are NextCRM's deal analyst. Assess one sales opportunity from its CRM records for the account owner.\n${GROUNDING_RULES}`,
+        system: `You are Harbor CRM's deal analyst. Assess one sales opportunity from its CRM records for the account owner.\n${GROUNDING_RULES}`,
         prompt,
       });
       payload = groundDeal(res.data, known);
@@ -171,7 +171,7 @@ export async function generateInsight(user: AuthzUser, entityType: InsightEntity
         userId: user.id,
         schema: relationshipInsightSchema,
         schemaName: "relationship_insight",
-        system: `You are NextCRM's relationship analyst. Summarize the business relationship with one ${entityType === "account" ? "company" : "person"} from its CRM records so the user knows where things stand and what to do next.\n${GROUNDING_RULES}`,
+        system: `You are Harbor CRM's relationship analyst. Summarize the business relationship with one ${entityType === "account" ? "company" : "person"} from its CRM records so the user knows where things stand and what to do next.\n${GROUNDING_RULES}`,
         prompt,
       });
       payload = groundRelationship(res.data, known);

@@ -87,8 +87,12 @@ export async function proxy(req: NextRequest) {
   // Non-API routes — redirect to sign-in if no session cookie
   if (!path.startsWith("/api")) {
     if (!sessionCookie) {
-      // Allow auth pages (sign-in, register, pending, inactive)
-      const authPaths = ["/sign-in", "/register", "/pending", "/inactive"];
+      // Visitors landing on the site root see the public landing page.
+      if (/^\/(?:(?:en|cz|de|uk)\/?)?$/.test(path)) {
+        return NextResponse.redirect(new URL("/welcome", req.nextUrl));
+      }
+      // Allow public pages (landing, sign-in, register, pending, inactive)
+      const authPaths = ["/welcome", "/sign-in", "/register", "/pending", "/inactive"];
       const isAuthPage = authPaths.some((p) => path.includes(p));
       if (!isAuthPage) {
         return NextResponse.redirect(new URL("/sign-in", req.nextUrl));

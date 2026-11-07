@@ -6,6 +6,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 
 import { Metadata } from "next";
+import { BRAND } from "@/lib/brand";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
 import { getTranslations } from "next-intl/server";
@@ -118,7 +119,7 @@ export default async function AppLayout({
         dict={translations}
         session={session}
         pluginNav={pluginNav}
-        appName={process.env.NEXT_PUBLIC_APP_NAME || "NextCRM"}
+        appName={BRAND.name}
       />
       <SidebarInset>
         <Header

@@ -12,6 +12,7 @@ import {
 import { Command, Puzzle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavMain } from "./nav-main";
+import { HarborMark } from "@/components/brand/harbor-mark";
 import { NavUser } from "./nav-user";
 import getDashboardMenuItem from "./menu-items/Dashboard";
 import getCrmMenuItem from "./menu-items/Crm";
@@ -27,7 +28,7 @@ import { partnerNavItems } from "@/lib/partner-routes";
 /**
  * AppSidebar Component - Task Groups 1.2, 2.2-2.7, 3.1, 5.3, 5.4
  *
- * Core sidebar component for NextCRM application layout.
+ * Core sidebar component for the Harbor CRM application layout.
  * Implements shadcn/ui sidebar pattern with:
  * - Logo and "N" branding symbol with rotation animation
  * - Build version display in footer (when expanded)
@@ -144,12 +145,7 @@ export function AppSidebar({
             isExpanded ? "gap-2.5" : "justify-center",
           )}
         >
-          <div
-            aria-hidden
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[6px] bg-sidebar-primary text-[13px] font-semibold text-sidebar-primary-foreground"
-          >
-            {appName.charAt(0).toUpperCase()}
-          </div>
+          <HarborMark className="text-sidebar-primary [--harbor-mark-fg:hsl(var(--sidebar-primary-foreground))]" title={appName} />
           <span
             className={cn(
               "truncate text-[15px] font-semibold tracking-tight text-sidebar-primary transition-opacity",

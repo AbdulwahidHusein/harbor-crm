@@ -1,0 +1,118 @@
+/* Harbor landing — palette and the single orchestrated hero sequence. */
+.page {
+  --paper: #eef1ec;
+  --ink: #0f2436;
+  --ink-soft: #46596a;
+  --depth: #d6e2e8;
+  --land: #efe4c4;
+  --harbor: #1f4e96;
+  --port: #c2362b;
+  --starboard: #1d7550;
+  --rule: #c9d3d6;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  color-scheme: light;
+}
+
+.display {
+  font-family: var(--font-archivo), var(--font-geist-sans), sans-serif;
+  font-variation-settings: "wdth" 112;
+  font-weight: 760;
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+}
+
+.hero {
+  font-variation-settings: "wdth" 100;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+.heading {
+  font-family: var(--font-archivo), var(--font-geist-sans), sans-serif;
+  font-variation-settings: "wdth" 106;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+}
+
+.sounding {
+  font-family: var(--font-archivo), sans-serif;
+  font-variation-settings: "wdth" 72;
+  font-style: italic;
+  font-weight: 420;
+}
+
+.label {
+  font-family: var(--font-archivo), sans-serif;
+  font-variation-settings: "wdth" 84;
+  font-weight: 600;
+}
+
+/* --- Hero load sequence: contours draw, buoys surface, course is plotted --- */
+.contour {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 1.6s cubic-bezier(0.6, 0, 0.2, 1) forwards;
+}
+.fade {
+  opacity: 0;
+  animation: fade 0.8s ease-out forwards;
+}
+.buoy {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: surface 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.3) forwards;
+}
+.course {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 1.4s cubic-bezier(0.55, 0, 0.25, 1) 1.9s forwards;
+}
+.card {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 1.2s forwards;
+}
+.pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse 2.8s ease-out 3.3s infinite;
+  opacity: 0;
+}
+
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes fade {
+  to { opacity: 1; }
+}
+@keyframes surface {
+  from { opacity: 0; transform: translateY(10px) scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes rise {
+  to { opacity: 1; transform: none; }
+}
+@keyframes pulse {
+  0% { opacity: 0.5; transform: scale(1); }
+  70%, 100% { opacity: 0; transform: scale(2.6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contour, .course { animation: none; stroke-dashoffset: 0; }
+  .fade, .buoy, .card { animation: none; opacity: 1; transform: none; }
+  .pulse { display: none; }
+}
+
+/* Chart labels are only legible from tablet width up. */
+@media (max-width: 639px) {
+  .chartLabel { display: none; }
+}
+
+.focusRing:focus-visible {
+  outline: 2px solid var(--harbor);
+  outline-offset: 3px;
+}
