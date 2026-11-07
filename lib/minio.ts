@@ -1,10 +1,22 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-if (!process.env.MINIO_ENDPOINT) throw new Error("MINIO_ENDPOINT is not defined");
-if (!process.env.MINIO_ACCESS_KEY) throw new Error("MINIO_ACCESS_KEY is not defined");
-if (!process.env.MINIO_SECRET_KEY) throw new Error("MINIO_SECRET_KEY is not defined");
-if (!process.env.MINIO_BUCKET) throw new Error("MINIO_BUCKET is not defined");
+function requireMinioConfig(): { endpoint: string; accessKeyId: string; secretAccessKey: string; bucket: string } {
+  const endpoint = process.env.MINIO_ENDPOINT;
+  const accessKeyId = process.env.MINIO_ACCESS_KEY;
+  const secretAccessKey = process.env.MINIO_SECRET_KEY;
+  const bucket = process.env.MINIO_BUCKET;
+  const missing = [
+    !endpoint && "MINIO_ENDPOINT",
+    !accessKeyId && "MINIO_ACCESS_KEY",
+    !secretAccessKey && "MINIO_SECRET_KEY",
+    !bucket && "MINIO_BUCKET",
+  ].filter((name): name is string => Boolean(name));
+  if (missing.length > 0 || !endpoint || !accessKeyId || !secretAccessKey || !bucket) {
+    throw new Error(`${missing.join(", ")} is not defined`);
+  }
+  return { endpoint, accessKeyId, secretAccessKey, bucket };
+}
 
 /**
  * URL browsers use to reach the bucket. In Docker MINIO_ENDPOINT is an
@@ -21,15 +33,26 @@ export function minioPublicEndpoint(env: NodeJS.ProcessEnv = process.env): strin
   ).replace(/\/+$/, "");
 }
 
-function createClient(endpoint: string) {
+function createClient(endpoint: string, accessKeyId: string, secretAccessKey: string) {
   return new S3Client({
     endpoint,
     region: "us-east-1", // MinIO requires a region value; actual value doesn't matter
-    credentials: {
-      accessKeyId: process.env.MINIO_ACCESS_KEY!,
-      secretAccessKey: process.env.MINIO_SECRET_KEY!,
-    },
+    credentials: { accessKeyId, secretAccessKey },
     forcePathStyle: true, // REQUIRED for MinIO — without this, SDK uses virtual-hosted-style which breaks
+  });
+}
+
+function lazyClient(resolveEndpoint: (config: ReturnType<typeof requireMinioConfig>) => string): S3Client {
+  let client: S3Client | undefined;
+  return new Proxy({} as S3Client, {
+    get(_target, prop, receiver) {
+      if (!client) {
+        const config = requireMinioConfig();
+        client = createClient(resolveEndpoint(config), config.accessKeyId, config.secretAccessKey);
+      }
+      const value = Reflect.get(client, prop, receiver);
+      return typeof value === "function" ? value.bind(client) : value;
+    },
   });
 }
 
@@ -38,15 +61,17 @@ export const MINIO_ENDPOINT = process.env.MINIO_ENDPOINT;
 export const MINIO_PUBLIC_URL = minioPublicEndpoint();
 
 /** For server-side reads and writes (internal endpoint). */
-export const minioClient = createClient(process.env.MINIO_ENDPOINT);
+export const minioClient = lazyClient((config) => config.endpoint);
 
 /**
  * For presigned URLs handed to browsers. A SigV4 signature covers the host,
  * so the URL must be signed for the endpoint the browser will call. Signing
  * makes no network request, so the app never has to reach this endpoint.
  */
-export const minioPresignClient =
-  MINIO_PUBLIC_URL === process.env.MINIO_ENDPOINT ? minioClient : createClient(MINIO_PUBLIC_URL);
+export const minioPresignClient = lazyClient((config) => {
+  const publicUrl = minioPublicEndpoint();
+  return publicUrl && publicUrl !== config.endpoint ? publicUrl : config.endpoint;
+});
 
 /** Short-lived GET link for a private object. Hand it out only after an access check. */
 export function presignGet(key: string, expiresIn = 300): Promise<string> {
