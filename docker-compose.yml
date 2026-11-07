@@ -150,6 +150,8 @@ services:
       # Optional services. Leave empty to use keys saved in the admin panel
       # (an env value always wins over the admin panel).
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      NEXTCRM_AI_MODEL: ${NEXTCRM_AI_MODEL:-}
+      NEXTCRM_AI_INLINE: ${NEXTCRM_AI_INLINE:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       GOOGLE_ID: ${GOOGLE_ID:-}
       GOOGLE_SECRET: ${GOOGLE_SECRET:-}
